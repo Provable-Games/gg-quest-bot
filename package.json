@@ -1,0 +1,26 @@
+{
+  "name": "budokan-submission-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/websocket": "^1.0.10"
+  },
+  "dependencies": {
+    "@dojoengine/sdk": "^1.5.3",
+    "@dojoengine/torii-client": "^1.5.3",
+    "@types/node": "^22.13.9",
+    "axios": "^1.9.0",
+    "dotenv": "^16.5.0",
+    "starknet": "^6.23.1",
+    "ts-node": "^10.9.2",
+    "websocket": "^1.0.35"
+  },
+  "scripts": {
+    "bun": "bun run src/index.ts",
+    "node": "node src/index.ts",
+    "build": "tsc -b",
+    "monitor-quests": "bun run src/index.ts worker monitorQuests"
+  }
+}
