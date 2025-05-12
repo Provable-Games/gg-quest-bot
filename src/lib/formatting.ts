@@ -1,5 +1,5 @@
 import { BigNumberish, shortString } from "starknet";
-
+import type { TokenMetadata } from "../types/index.ts";
 export const feltToString = (v: BigNumberish): string => {
   return BigInt(v) > 0n ? shortString.decodeShortString(bigintToHex(v)) : "";
 };
@@ -7,7 +7,7 @@ export const feltToString = (v: BigNumberish): string => {
 export const bigintToHex = (v: BigNumberish): `0x${string}` =>
   !v ? "0x0" : `0x${BigInt(v).toString(16)}`;
 
-export const formatTokenMetadata = (data: any): any => {
+export const formatTokenMetadata = (data: any): TokenMetadata => {
   const result = {
     start: data.lifecycle.start.unwrap(),
     end: data.lifecycle.end.unwrap(),

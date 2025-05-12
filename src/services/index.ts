@@ -5,9 +5,9 @@ import type {
   DojoService,
   BotState,
   Services,
-  ApiService,
+  GGQuestApiService,
 } from "../types/index.js";
-import { initApiService } from "./api.js";
+import { initGGQuestApiService } from "./ggQuestApi.js";
 
 export interface ExtendedServices extends Services {
   dojo: DojoService;
@@ -23,7 +23,7 @@ export async function initializeServices(
   const dojo: DojoService = await initDojoService();
 
   // Initialize API service
-  const api: ApiService = await initApiService();
+  const ggQuestApi: GGQuestApiService = await initGGQuestApiService();
 
   // Create a cleanup function for graceful shutdown
   const cleanup = async (): Promise<void> => {
@@ -35,7 +35,7 @@ export async function initializeServices(
   return {
     database,
     dojo,
-    api,
+    ggQuestApi,
     cleanup,
   };
 }

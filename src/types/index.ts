@@ -18,7 +18,7 @@ export interface DojoService {
   initialize: () => Promise<any>;
 }
 
-export interface ApiService {
+export interface GGQuestApiService {
   api: AxiosInstance | null;
   initialize: () => Promise<AxiosInstance>;
   dispatchAction: (playerAddress: string, actions: string[]) => Promise<any>;
@@ -28,7 +28,7 @@ export interface ApiService {
 export interface Services {
   database: Database;
   dojo: DojoService;
-  api: ApiService;
+  ggQuestApi: GGQuestApiService;
   cleanup: () => Promise<void>;
 }
 
@@ -37,4 +37,20 @@ export interface BotState {
   services: Services | null;
   workers: WorkersService | null;
   isReady: boolean;
+}
+
+export interface GameState {
+  tokenInfo: any;
+  tokenMetadata: TokenMetadata;
+  score: number;
+}
+
+export interface TokenMetadata {
+  start: number;
+  end: number;
+  mint: number;
+  minted_by: string;
+  player_name: string;
+  settings_id: number;
+  token_id: number;
 }

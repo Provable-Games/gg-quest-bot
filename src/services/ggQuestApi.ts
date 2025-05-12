@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import type { ApiService } from "../types/index.ts";
+import type { GGQuestApiService } from "../types/index.ts";
 import { env } from "../../env.ts";
 
 interface QuestAction {
@@ -7,7 +7,7 @@ interface QuestAction {
   playerAddress: string;
 }
 
-export async function initApiService(): Promise<ApiService> {
+export async function initGGQuestApiService(): Promise<GGQuestApiService> {
   let apiInstance: AxiosInstance | null = null;
   const API_URL =
     "https://api.gg.quest/api/v2/action-dispatcher/dispatch/public";

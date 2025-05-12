@@ -2,19 +2,52 @@ import { createWorker } from "@dojoengine/sdk/node";
 import { subscribeToGamesQuery } from "../dojo/queries/sdk.ts";
 import type { BotState } from "../types/index.ts";
 import { ACTIONS_MAP, NAMESPACE } from "../lib/constants.ts";
-import { formatTokenMetadata } from "../lib/formatting.ts";
-
-// Define an interface for our game state
-interface GameState {
-  tokenInfo: any;
-  tokenMetadata: any; // Replace 'any' with your TokenMetadata type
-  score: number;
-}
+import { feltToString, formatTokenMetadata } from "../lib/formatting.ts";
+import { env } from "../../env.ts";
+import { getGameScoresQuery } from "../dojo/queries/sql.ts";
+import { bigintToHex } from "../lib/formatting.ts";
+import { addAddressPadding } from "starknet";
+import { GameState } from "../types/index.ts";
 
 // Store games with their metadata and scores
 const games = new Map<number, GameState>();
 
 export async function monitorQuests(args: string[], botState: BotState) {
+  const start = env.START;
+
+  if (start) {
+    const query = getGameScoresQuery(
+      NAMESPACE,
+      addAddressPadding(bigintToHex(start))
+    );
+    const encodedQuery = encodeURIComponent(query);
+
+    const response = await fetch(`${env.TORII_URL}/sql?query=${encodedQuery}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const data = await response.json();
+    for (const item of data) {
+      games.set(Number(item.token_id), {
+        tokenMetadata: {
+          start: Number(item["lifecycle.start.Some"] ?? 0),
+          end: Number(item["lifecycle.end.Some"] ?? 0),
+          mint: Number(item["lifecycle.mint"]),
+          minted_by: item.minted_by,
+          player_name: feltToString(item.player_name),
+          settings_id: item.settings_id,
+          token_id: Number(item.token_id),
+        },
+        score: item.score,
+        tokenInfo: {
+          account_address: item.account_address,
+        },
+      });
+    }
+  }
+
   await createWorker(async () => {
     async function onEntityUpdated({ data, error }) {
       if (error) {
@@ -65,17 +98,18 @@ export async function monitorQuests(args: string[], botState: BotState) {
           if (gameModel.hero_health <= 0) {
             const playerAddress = games.get(tokenId)?.tokenInfo.account_address;
             const settingsId = games.get(tokenId)?.tokenMetadata.settings_id;
-            const action = ACTIONS_MAP[settingsId];
+            const action = settingsId ? ACTIONS_MAP[settingsId] : undefined;
             if (action) {
               try {
-                if (!botState.services?.api?.dispatchAction) {
+                if (!botState.services?.ggQuestApi?.dispatchAction) {
                   throw new Error("API service not initialized");
                 }
 
                 // Send the completion action to GG Quest
-                await botState.services.api.dispatchAction(playerAddress, [
-                  action,
-                ]);
+                await botState.services.ggQuestApi.dispatchAction(
+                  playerAddress,
+                  [action]
+                );
 
                 console.log("Quest completion successfully reported");
               } catch (error) {
@@ -100,7 +134,15 @@ export async function monitorQuests(args: string[], botState: BotState) {
           });
         } else {
           games.set(tokenId, {
-            tokenMetadata: {},
+            tokenMetadata: {
+              start: 0,
+              end: 0,
+              mint: 0,
+              minted_by: "",
+              player_name: "",
+              settings_id: 0,
+              token_id: tokenId,
+            },
             score: 0,
             tokenInfo: data,
           });
@@ -121,9 +163,7 @@ export async function monitorQuests(args: string[], botState: BotState) {
     });
 
     const response2 = await sdk.onTokenBalanceUpdated({
-      contractAddresses: [
-        "0x25dd1faa4f94d1ddd523d7db4697c10a34a09d7b55b4758995a070fd9d61498",
-      ],
+      contractAddresses: [env.DS_ADDRESS],
       accountAddresses: [],
       tokenIds: [],
       callback: onTokenUpdated,

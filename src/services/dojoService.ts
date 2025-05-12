@@ -21,15 +21,14 @@ export async function initDojoService(): Promise<DojoService> {
 
     sdkInstance = await init<SchemaType>({
       client: {
-        toriiUrl: "https://api.cartridge.gg/x/darkshuffle-sepolia/torii",
+        toriiUrl: env.TORII_URL,
         relayUrl: "",
-        worldAddress:
-          "0x4e2023f1c633ccb98a5c7b40bd23c01742c10a635a04dbfd0417944a3d7d042",
+        worldAddress: env.WORLD_ADDRESS,
       },
       domain: {
-        name: "WORLD_NAME",
+        name: "Provable Games",
         version: "1.0",
-        chainId: "KATANA",
+        chainId: "SN_SEPOLIA",
         revision: "1",
       },
       identity: env.IDENTITY,
