@@ -19,7 +19,7 @@ export const getGameScoresQuery = (namespace: string, start?: string) => {
   FROM token_balances tb
   LEFT JOIN tokens t ON tb.token_id = t.id
   LEFT JOIN '${namespace}-Game' s 
-    ON SUBSTR(tb.token_id, INSTR(tb.token_id, ':') + 1) = s.hero_xp
+    ON SUBSTR(tb.token_id, INSTR(tb.token_id, ':') + 1) = s.game_id
   LEFT JOIN '${namespace}-TokenMetadata' m 
     ON SUBSTR(tb.token_id, INSTR(tb.token_id, ':') + 1) = m.token_id`;
 

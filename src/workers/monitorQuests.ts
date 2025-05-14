@@ -18,7 +18,7 @@ export async function monitorQuests(args: string[], botState: BotState) {
   if (start) {
     const query = getGameScoresQuery(
       NAMESPACE,
-      addAddressPadding(bigintToHex(start)),
+      addAddressPadding(bigintToHex(start))
     );
     const encodedQuery = encodeURIComponent(query);
 
@@ -45,6 +45,27 @@ export async function monitorQuests(args: string[], botState: BotState) {
           account_address: item.account_address,
         },
       });
+
+      if (item.score >= TARGET_SCORE_MAP[item.settings_id]) {
+        const action = ACTIONS_MAP[item.settings_id];
+        if (action) {
+          try {
+            if (!botState.services?.ggQuestApi?.dispatchAction) {
+              throw new Error("API service not initialized");
+            }
+
+            // Send the completion action to GG Quest
+            await botState.services.ggQuestApi.dispatchAction(
+              item.account_address,
+              [action]
+            );
+
+            console.log("Quest completion successfully reported");
+          } catch (error) {
+            console.error("Failed to report quest completion:", error);
+          }
+        }
+      }
     }
   }
 
@@ -96,7 +117,7 @@ export async function monitorQuests(args: string[], botState: BotState) {
           }
 
           const settingsId = games.get(tokenId)?.tokenMetadata.settings_id;
-          const target_score = TARGET_SCORE_MAP[settingsId];
+          const target_score = settingsId ? TARGET_SCORE_MAP[settingsId] : 0;
 
           if (gameModel.hero_xp >= target_score) {
             const playerAddress = games.get(tokenId)?.tokenInfo.account_address;
@@ -110,7 +131,7 @@ export async function monitorQuests(args: string[], botState: BotState) {
                 // Send the completion action to GG Quest
                 await botState.services.ggQuestApi.dispatchAction(
                   playerAddress,
-                  [action],
+                  [action]
                 );
 
                 console.log("Quest completion successfully reported");
