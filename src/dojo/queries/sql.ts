@@ -12,7 +12,11 @@ export const getGameScoresQuery = (namespace: string, start?: string) => {
     m."lifecycle.start.some",
     m."lifecycle.end.some",
     m.minted_by,
-    m.settings_id`;
+    m.settings_id,
+    ROW_NUMBER() OVER (
+      PARTITION BY tb.account_address, m.settings_id
+      ORDER BY COALESCE(s.hero_xp, 0) DESC
+    ) as rn`;
 
   // Add metagame attribute to select if needed
   query += `
@@ -21,12 +25,26 @@ export const getGameScoresQuery = (namespace: string, start?: string) => {
   LEFT JOIN '${namespace}-Game' s 
     ON SUBSTR(tb.token_id, INSTR(tb.token_id, ':') + 1) = s.game_id
   LEFT JOIN '${namespace}-TokenMetadata' m 
-    ON SUBSTR(tb.token_id, INSTR(tb.token_id, ':') + 1) = m.token_id`;
+    ON SUBSTR(tb.token_id, INSTR(tb.token_id, ':') + 1) = m.token_id
+  WHERE (
+    (m.settings_id = 1 AND COALESCE(s.hero_xp, 0) >= 51) OR
+    (m.settings_id = 3 AND COALESCE(s.hero_xp, 0) >= 26) OR
+    (m.settings_id = 4 AND COALESCE(s.hero_xp, 0) >= 26) OR
+    (m.settings_id = 5 AND COALESCE(s.hero_xp, 0) >= 101) OR
+    (m.settings_id = 6 AND COALESCE(s.hero_xp, 0) >= 26)
+  )`;
 
   if (start) {
     query += `
-    WHERE m."lifecycle.mint" >= "${start}"`;
+    AND m."lifecycle.mint" >= "${start}"`;
   }
+
+  // Add deduplication
+  query = `
+  SELECT * FROM (
+    ${query}
+  ) deduped
+  WHERE rn = 1`;
 
   return query;
 };
