@@ -6,3 +6,11 @@ export const ACTIONS_MAP = {
   1: "Completed Hard Mode",
   5: "Completed Nightmare Mode",
 };
+
+export const TARGET_SCORE_MAP = {
+  3: 26,
+  6: 26,
+  4: 26,
+  1: 51,
+  5: 101,
+};

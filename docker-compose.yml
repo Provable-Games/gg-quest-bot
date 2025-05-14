@@ -7,8 +7,6 @@ services:
       - "3001:3001"
     environment:
       - NODE_ENV=development
-      - IDENTITY=${IDENTITY}
-      - SECRET_KEY=${SECRET_KEY}
       - GAME_SECRET=${GAME_SECRET}
       # - DATABASE_URL=postgresql://postgres:postgres@db:5432/budokan
     # depends_on:

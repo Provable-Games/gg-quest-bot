@@ -31,8 +31,6 @@ export async function initDojoService(): Promise<DojoService> {
         chainId: "SN_SEPOLIA",
         revision: "1",
       },
-      identity: env.IDENTITY,
-      signer: SigningKey.fromSecretScalar(env.SECRET_KEY),
     });
 
     console.log("Dojo SDK initialized successfully");

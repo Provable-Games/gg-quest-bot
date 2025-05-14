@@ -1,7 +1,7 @@
 import { createWorker } from "@dojoengine/sdk/node";
 import { subscribeToGamesQuery } from "../dojo/queries/sdk.ts";
 import type { BotState } from "../types/index.ts";
-import { ACTIONS_MAP, NAMESPACE } from "../lib/constants.ts";
+import { ACTIONS_MAP, TARGET_SCORE_MAP, NAMESPACE } from "../lib/constants.ts";
 import { feltToString, formatTokenMetadata } from "../lib/formatting.ts";
 import { env } from "../../env.ts";
 import { getGameScoresQuery } from "../dojo/queries/sql.ts";
@@ -18,7 +18,7 @@ export async function monitorQuests(args: string[], botState: BotState) {
   if (start) {
     const query = getGameScoresQuery(
       NAMESPACE,
-      addAddressPadding(bigintToHex(start))
+      addAddressPadding(bigintToHex(start)),
     );
     const encodedQuery = encodeURIComponent(query);
 
@@ -95,9 +95,11 @@ export async function monitorQuests(args: string[], botState: BotState) {
             });
           }
 
-          if (gameModel.hero_health <= 0) {
+          const settingsId = games.get(tokenId)?.tokenMetadata.settings_id;
+          const target_score = TARGET_SCORE_MAP[settingsId];
+
+          if (gameModel.hero_xp >= target_score) {
             const playerAddress = games.get(tokenId)?.tokenInfo.account_address;
-            const settingsId = games.get(tokenId)?.tokenMetadata.settings_id;
             const action = settingsId ? ACTIONS_MAP[settingsId] : undefined;
             if (action) {
               try {
@@ -108,7 +110,7 @@ export async function monitorQuests(args: string[], botState: BotState) {
                 // Send the completion action to GG Quest
                 await botState.services.ggQuestApi.dispatchAction(
                   playerAddress,
-                  [action]
+                  [action],
                 );
 
                 console.log("Quest completion successfully reported");

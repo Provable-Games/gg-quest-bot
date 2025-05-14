@@ -9,8 +9,6 @@ interface QuestAction {
 
 export async function initGGQuestApiService(): Promise<GGQuestApiService> {
   let apiInstance: AxiosInstance | null = null;
-  const API_URL =
-    "https://api.gg.quest/api/v2/action-dispatcher/dispatch/public";
 
   const initialize = async (): Promise<AxiosInstance> => {
     if (apiInstance) return apiInstance;
@@ -18,7 +16,7 @@ export async function initGGQuestApiService(): Promise<GGQuestApiService> {
     console.log("Initializing API Service...");
 
     apiInstance = axios.create({
-      baseURL: API_URL,
+      baseURL: env.QUEST_URL,
       headers: {
         "Content-Type": "application/json",
         secret: env.GAME_SECRET,
@@ -39,10 +37,10 @@ export async function initGGQuestApiService(): Promise<GGQuestApiService> {
         playerAddress,
       };
 
-      // const response = await apiInstance.post("", payload);
-      // console.log("Action dispatched successfully:", response.data);
-      // return response.data;
-      console.log("Action dispatched successfully:", payload);
+      const response = await apiInstance.post("", payload);
+      console.log("Action dispatched successfully:", response.data);
+      return response.data;
+      // console.log("Action dispatched successfully:", payload);
     } catch (error) {
       console.error("Failed to dispatch action:", error);
       throw error;
